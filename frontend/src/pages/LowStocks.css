@@ -1,0 +1,161 @@
+.low-stocks {
+  min-height: 100vh;
+  padding-bottom: 48px;
+  background: #f6f7f9;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #14161a;
+  box-sizing: border-box;
+}
+
+.low-stocks__header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 40px 32px 0;
+  margin-bottom: 24px;
+}
+
+.low-stocks__eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #b45309;
+}
+
+.low-stocks__title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.low-stocks__list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 760px;
+  padding: 0 32px;
+}
+
+.low-stock-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px 24px;
+  background: #ffffff;
+  border: 1px solid #fde68a;
+  border-left: 4px solid #f59e0b;
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.low-stock-card:hover {
+  box-shadow: 0 4px 14px rgba(16, 24, 40, 0.08);
+  transform: translateY(-2px);
+}
+
+.low-stock-card__main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.low-stock-card__name {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.low-stock-card__barcode {
+  font-size: 12px;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  color: #9ca3af;
+  letter-spacing: 0.02em;
+}
+
+.low-stock-card__stock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.low-stock-card__stock-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #b45309;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.low-stock-card__stock-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #b45309;
+}
+
+.low-stocks__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 360px;
+  margin: 60px auto 0;
+  padding: 40px 32px;
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.low-stocks__empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 8px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #10b981;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.low-stocks__empty-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.low-stocks__empty-text {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+@media (max-width: 560px) {
+  .low-stocks__header,
+  .low-stocks__list {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .low-stock-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .low-stock-card__stock {
+    align-items: flex-start;
+  }
+}
