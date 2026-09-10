@@ -13,6 +13,7 @@ import NavBar from "../components/NavBar";
 import "./Products.css";
 import Form from "../components/form";
 import StockForm from "../components/StockForm";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 function Products() {
   const [data, setData] = useState([]);
@@ -21,6 +22,7 @@ function Products() {
   const [fromUpdate, setFromUpdate] = useState(false);
   const [itemToUpdate, setItemToUpdate] = useState(null);
   const [fromStock, setFromStock] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   async function loadProducts() {
     const result = await getProducts();
@@ -40,15 +42,12 @@ function Products() {
     const result = await getProductsByBarcode(value);
     setData(result);
   }
-  async function handleDelete(id) {
-    const ans = window.confirm("Are you sure you want to delete this product?");
-    if (!ans) {
-      return;
-    }
-    const result = await deleteProduct(id);
+  async function handleDelete() {
+    const result = await deleteProduct(itemToDelete);
     if (result.error) {
       alert(result.error);
     }
+    setItemToDelete(null);
     loadProducts();
   }
   async function addProduct(productData) {
@@ -158,6 +157,15 @@ function Products() {
         </div>
       )}
 
+      <ConfirmDialog
+        open={itemToDelete !== null}
+        title="Delete product?"
+        message="Are you sure you want to delete this product? This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+        onCancel={() => setItemToDelete(null)}
+      />
+
       <div className="products__list">
         {data &&
           data.length > 0 &&
@@ -195,7 +203,7 @@ function Products() {
                   </button>
                   <button
                     className="product-card__btn product-card__btn--delete"
-                    onClick={() => handleDelete(item.id)}
+                    onClick={() => setItemToDelete(item.id)}
                   >
                     Delete
                   </button>
