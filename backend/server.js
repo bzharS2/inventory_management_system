@@ -1,10 +1,12 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const db = require("./db");
 const app = express();
-const appRoutes= require(`./routes/appRoutes.js`)
+const appRoutes = require(`./routes/appRoutes.js`);
 
+app.use(helmet());
 app.use(cors({
     origin: "http://localhost:5173"
 }));

@@ -1,18 +1,31 @@
 require("dotenv").config();
 const db = require("../db");
+const {
+    MAX_NAME,
+    MAX_DESCRIPTION,
+    parsePositiveInt,
+    parseId,
+    parsePrice,
+    parseText,
+    parseBarcode,
+    parseIsoDate,
+    escapeLike,
+    isDuplicateKeyError
+} = require("../utils/validation");
 
 const getProductsController = async (req, res) => {
     try {
         const [result] = await db.query(`SELECT * FROM products`);
         return res.status(200).json(result);
     } catch (error) {
-        return res.status(500).json({ error: `internal server error` })
+        return res.status(500).json({ error: `internal server error` });
     }
-}
+};
+
 const getProductByBarcode = async (req, res) => {
-    const code = req.params.barcode;
-    if (!code || code.length > 50) {
-        return res.status(400).json({ error: `invalid barcode` })
+    const code = parseBarcode(req.params.barcode);
+    if (!code) {
+        return res.status(400).json({ error: `invalid barcode` });
     }
     try {
         const [result] = await db.query(`SELECT * FROM products WHERE barcode=?`, [code]);
@@ -23,78 +36,85 @@ const getProductByBarcode = async (req, res) => {
     } catch (error) {
         return res.status(500).json({ error: `internal server error` });
     }
-}
+};
+
 const createProductController = async (req, res) => {
-    const { name, description, barcode, price, quantity } = req.body;
-    if (!name ||
-        name.trim() == '' ||
-        !description ||
-        description.trim() == "" ||
-        !barcode ||
-        barcode.length > 50 ||
-        !price ||
-        price == 0 ||
-        price < 0 ||
-        !quantity ||
-        quantity < 1) {
+    const name = parseText(req.body.name, MAX_NAME);
+    const description = parseText(req.body.description, MAX_DESCRIPTION);
+    const barcode = parseBarcode(req.body.barcode);
+    const price = parsePrice(req.body.price);
+    const quantity = parsePositiveInt(req.body.quantity);
+
+    if (!name || !description || !barcode || price === null || quantity === null) {
         return res.status(400).json({ error: `invalid values` });
     }
+
     try {
-        const [result] = await db.query(`INSERT INTO products (name,description,barcode,price,quantity) VALUES(?,?,?,?,?)`, [name, description, barcode, price, quantity]);
+        const [result] = await db.query(
+            `INSERT INTO products (name,description,barcode,price,quantity) VALUES(?,?,?,?,?)`,
+            [name, description, barcode, price, quantity]
+        );
         if (result.affectedRows == 0) {
             return res.status(400).json({ error: `product didn't get created` });
         }
         return res.status(200).json({ message: `product created successfully` });
     } catch (error) {
-        return res.status(500).json({ error: error });
+        if (isDuplicateKeyError(error)) {
+            return res.status(400).json({ error: `barcode already exists` });
+        }
+        return res.status(500).json({ error: `internal server error` });
     }
-}
+};
+
 const updateProductController = async (req, res) => {
-    const id = req.params.id;
-    const { name, description, barcode, price, quantity } = req.body;
-    if (!name ||
-        name.trim() == '' ||
-        !description ||
-        description.trim() == "" ||
-        !barcode ||
-        barcode.length > 50 ||
-        !price ||
-        price == 0 ||
-        price < 0 ||
-        !quantity ||
-        quantity < 1) {
+    const id = parseId(req.params.id);
+    const name = parseText(req.body.name, MAX_NAME);
+    const description = parseText(req.body.description, MAX_DESCRIPTION);
+    const barcode = parseBarcode(req.body.barcode);
+    const price = parsePrice(req.body.price);
+    const quantity = parsePositiveInt(req.body.quantity);
+
+    if (!id || !name || !description || !barcode || price === null || quantity === null) {
         return res.status(400).json({ error: `invalid values` });
     }
+
     try {
-        const [result] = await db.query(`UPDATE products SET name = ?, description = ?, barcode = ?, price = ?, quantity = ? WHERE id = ?;`,
-            [name, description, barcode, price, quantity, id]);
+        const [result] = await db.query(
+            `UPDATE products SET name = ?, description = ?, barcode = ?, price = ?, quantity = ? WHERE id = ?;`,
+            [name, description, barcode, price, quantity, id]
+        );
         if (result.affectedRows == 0) {
             return res.status(400).json({ error: `product didn't get update` });
         }
         return res.status(200).json({ message: `product updated successfully` });
     } catch (error) {
-        return res.status(500).json({ error: error })
+        if (isDuplicateKeyError(error)) {
+            return res.status(400).json({ error: `barcode already exists` });
+        }
+        return res.status(500).json({ error: `internal server error` });
     }
-}
+};
+
 const deleteProductController = async (req, res) => {
-    const id = req.params.id;
-    if (!id || id < 1) {
+    const id = parseId(req.params.id);
+    if (!id) {
         return res.status(400).json({ error: `invalid inputs` });
     }
     try {
         const [result] = await db.query(`DELETE FROM products WHERE id= ?`, [id]);
         if (result.affectedRows == 0) {
-            return res.status(404).json({ error: `product not found` })
+            return res.status(404).json({ error: `product not found` });
         }
-        return res.status(200).json({ message: `product deleted successfully` })
+        return res.status(200).json({ message: `product deleted successfully` });
     } catch (error) {
         return res.status(500).json({ error: `internal server error` });
     }
-}
+};
+
 const addStockController = async (req, res) => {
-    const id = req.params.id;
-    const amount = req.body.quantity;
-    if (!id || id < 1 || !amount || amount < 1) {
+    const id = parseId(req.params.id);
+    const amount = parsePositiveInt(req.body.quantity);
+    if (!id || amount === null) {
         return res.status(400).json({ error: `invalid values` });
     }
     try {
@@ -104,9 +124,10 @@ const addStockController = async (req, res) => {
         }
         return res.status(200).json({ message: `stock added successfully` });
     } catch (error) {
-        return res.status(500).json({ error: error });
+        return res.status(500).json({ error: `internal server error` });
     }
-}
+};
+
 const createSalesController = async (req, res) => {
     const { items } = req.body;
 
@@ -114,12 +135,16 @@ const createSalesController = async (req, res) => {
         return res.status(400).json({ error: `invalid type` });
     }
 
+    const parsedItems = [];
     for (let i = 0; i < items.length; i++) {
-        const { id, quantity } = items[i];
+        const id = parseId(items[i] && items[i].id);
+        const quantity = parsePositiveInt(items[i] && items[i].quantity);
 
-        if (!id || id < 1 || !quantity || quantity < 1) {
+        if (!id || quantity === null) {
             return res.status(400).json({ error: `invalid values` });
         }
+
+        parsedItems.push({ id, quantity });
     }
 
     const connection = await db.getConnection();
@@ -128,8 +153,8 @@ const createSalesController = async (req, res) => {
     try {
         await connection.beginTransaction();
 
-        for (let i = 0; i < items.length; i++) {
-            const { id, quantity } = items[i];
+        for (let i = 0; i < parsedItems.length; i++) {
+            const { id, quantity } = parsedItems[i];
 
             const [check] = await connection.query(
                 `SELECT id, price, quantity
@@ -192,18 +217,16 @@ const createSalesController = async (req, res) => {
             message: `sales created successfully`,
             totalPrice: totalPrice
         });
-
     } catch (error) {
         await connection.rollback();
-
         return res.status(500).json({
             error: `internal server error`
         });
-
     } finally {
         connection.release();
     }
 };
+
 const getSalesController = async (req, res) => {
     try {
         const [result] = await db.query(`SELECT sales.id, products.name,sales.total_price,sales.quantity,sales.sold_at FROM sales JOIN products ON sales.product_id = products.id`);
@@ -212,9 +235,10 @@ const getSalesController = async (req, res) => {
         }
         return res.status(200).json(result);
     } catch (error) {
-        return res.status(500).json({ error: `internal server error` })
+        return res.status(500).json({ error: `internal server error` });
     }
-}
+};
+
 const getDashboardController = async (req, res) => {
     try {
         const [result] = await db.query(`
@@ -222,16 +246,17 @@ const getDashboardController = async (req, res) => {
         (SELECT COUNT(*) FROM products) AS products,
         (SELECT SUM(quantity) FROM products) AS total_stock,
         COALESCE((SELECT SUM(total_price) FROM sales), 0) AS total_sales
-    `); // COALESCE(IF_NULL,RETURN THIS);
+    `);
 
         if (result.length == 0) {
             return res.status(404).json({ error: `no dashboard` });
         }
         return res.status(200).json(result[0]);
     } catch (error) {
-        return res.status(500).json({ error: `internal server error` })
+        return res.status(500).json({ error: `internal server error` });
     }
-}
+};
+
 const getLowStockController = async (req, res) => {
     try {
         const [result] = await db.query(`SELECT * FROM products WHERE quantity<=5`);
@@ -242,7 +267,8 @@ const getLowStockController = async (req, res) => {
     } catch (error) {
         return res.status(500).json({ error: `internal server error` });
     }
-}
+};
+
 const getSortByPopularController = async (req, res) => {
     try {
         const [result] = await db.query(`SELECT
@@ -263,14 +289,18 @@ const getSortByPopularController = async (req, res) => {
     } catch (error) {
         return res.status(500).json({ error: `internal server error` });
     }
-}
+};
+
 const getSearchByNameController = async (req, res) => {
-    const name = req.body.name;
-    if (!name || name.trim() == "") {
+    const name = parseText(req.body.name, MAX_NAME);
+    if (!name) {
         return res.status(400).json({ error: `invalid value` });
     }
     try {
-        const [result] = await db.query(`SELECT * FROM products WHERE name LIKE ?`, [`%${name}%`]);
+        const [result] = await db.query(
+            `SELECT * FROM products WHERE name LIKE ? ESCAPE '\\\\'`,
+            [`%${escapeLike(name)}%`]
+        );
         if (result.length == 0) {
             return res.status(200).json({ message: `no items found with that name` });
         }
@@ -278,34 +308,43 @@ const getSearchByNameController = async (req, res) => {
     } catch (error) {
         return res.status(500).json({ error: `internal server error` });
     }
+};
 
-}
 const getSalesByDateController = async (req, res) => {
-    const date = req.body.date;
-    if (!date || date.trim() == "") {
-        return res.status(400).json({ error: `invalid date` })
+    const date = parseIsoDate(req.body.date);
+    if (!date) {
+        return res.status(400).json({ error: `invalid date` });
     }
     try {
-        const [result] = await db.query('SELECT products.id,products.name,sales.quantity,sales.total_price,sales.sold_at FROM sales JOIN products ON sales.product_id = products.id WHERE DATE(sales.sold_at) = ?', [date]);
+        const [result] = await db.query(
+            'SELECT products.id,products.name,sales.quantity,sales.total_price,sales.sold_at FROM sales JOIN products ON sales.product_id = products.id WHERE DATE(sales.sold_at) = ?',
+            [date]
+        );
 
         return res.status(200).json(result);
     } catch (error) {
-        return res.status(500).json({ error: `internal server error` })
+        return res.status(500).json({ error: `internal server error` });
     }
-}
+};
+
 const getSalesByRangeController = async (req, res) => {
-    const { from, to } = req.body;
-    if (!from || !to || from.trim() == "" || to.trim() == "" || new Date(from) > new Date(to)) {
+    const from = parseIsoDate(req.body.from);
+    const to = parseIsoDate(req.body.to);
+    if (!from || !to || from > to) {
         return res.status(400).json({ error: `invalid values` });
     }
 
     try {
-        const [result] = await db.query('SELECT products.id,products.name,sales.quantity,sales.total_price,sales.sold_at FROM sales JOIN products ON sales.product_id = products.id WHERE sales.sold_at>=? AND sales.sold_at<?', [from, to]);
+        const [result] = await db.query(
+            'SELECT products.id,products.name,sales.quantity,sales.total_price,sales.sold_at FROM sales JOIN products ON sales.product_id = products.id WHERE sales.sold_at>=? AND sales.sold_at < DATE_ADD(?, INTERVAL 1 DAY)',
+            [from, to]
+        );
         return res.status(200).json(result);
     } catch (error) {
-        return res.status(500).json({ error: `internal server error` })
+        return res.status(500).json({ error: `internal server error` });
     }
-}
+};
+
 module.exports = {
     getProductsController,
     getProductByBarcode,
@@ -321,4 +360,4 @@ module.exports = {
     getSearchByNameController,
     getSalesByDateController,
     getSalesByRangeController
-}
+};
