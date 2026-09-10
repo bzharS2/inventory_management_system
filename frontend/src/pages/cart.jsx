@@ -1,6 +1,7 @@
 import NavBar from "../components/NavBar";
 import { useState } from "react";
 import CartForm from "../components/CartForm";
+import AlertDialog from "../components/AlertDialog";
 import { createSales } from "../services/api";
 import "./Cart.css";
 
@@ -9,6 +10,7 @@ function Cart() {
   const [showForm, setShowForm] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [fromUpdate, setFromUpdate] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(null);
   async function handleAddProduct(product) {
     if (
       product === null ||
@@ -46,10 +48,17 @@ function Cart() {
   async function handleCheckout(items) {
     const result = await createSales(items);
     if (result.error) {
-      alert(result.error);
+      setAlertMessage({
+        title: "Checkout failed",
+        message: result.error,
+      });
+      return;
     }
     if (result.message) {
-      alert(`${result.message}\nTotal Price: $${result.totalPrice.toFixed(2)}`);
+      setAlertMessage({
+        title: "Checkout complete",
+        message: `${result.message}\nTotal Price: $${result.totalPrice.toFixed(2)}`,
+      });
       setShowForm(false);
       setCartItems([]);
     }
@@ -97,6 +106,13 @@ function Cart() {
           />
         </div>
       )}
+
+      <AlertDialog
+        open={alertMessage !== null}
+        title={alertMessage?.title}
+        message={alertMessage?.message}
+        onClose={() => setAlertMessage(null)}
+      />
 
       {cartItems.length > 0 ? (
         <div className="cart__section">
