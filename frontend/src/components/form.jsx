@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import "./Form.css";
 function Form({ item, onSubmit, onCancel }) {
   const [name, setName] = useState("");
+  const [initialCost, setInitialCost] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
   const [description, setDescription] = useState("");
@@ -12,12 +13,14 @@ function Form({ item, onSubmit, onCancel }) {
   useEffect(() => {
     if (item) {
       setName(item.name || "");
+      setInitialCost(item.initial_cost || "");
       setPrice(item.price || "");
       setQuantity(item.quantity || "");
       setDescription(item.description || "");
       setBarcode(item.barcode || "");
     } else {
       setName("");
+      setInitialCost("");
       setPrice("");
       setQuantity("");
       setDescription("");
@@ -34,6 +37,7 @@ function Form({ item, onSubmit, onCancel }) {
       name,
       description,
       barcode,
+      initial_cost: initialCost,
       price,
       quantity,
     };
@@ -62,12 +66,28 @@ function Form({ item, onSubmit, onCancel }) {
         </div>
 
         <div className="user-form__field">
+          <label htmlFor="product-initial-cost">Initial Cost</label>
+          <input
+            id="product-initial-cost"
+            type="number"
+            min="0.01"
+            step="0.01"
+            value={initialCost}
+            onChange={(e) => setInitialCost(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="user-form__field">
           <label htmlFor="product-price">Price</label>
           <input
             id="product-price"
             type="number"
+            min="0.01"
+            step="0.01"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
+            required
           />
         </div>
 

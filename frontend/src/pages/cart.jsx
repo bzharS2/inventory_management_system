@@ -124,7 +124,10 @@ function Cart() {
                   <li className="cart-item" key={item.id}>
                     <div className="cart-item__main">
                       <span className="cart-item__name">{item.name}</span>
-                      <span className="cart-item__price">{item.price}$</span>
+                      <span className="cart-item__prices">
+                        <span>Cost: {item.initial_cost}$</span>
+                        <span>Price: {item.price}$</span>
+                      </span>
                     </div>
                     <span className="cart-item__quantity">
                       Quantity: {item.quantity}

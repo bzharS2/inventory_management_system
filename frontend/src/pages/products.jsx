@@ -179,6 +179,12 @@ function Products() {
 
               <div className="product-card__stats">
                 <div className="product-card__stat">
+                  <span className="product-card__stat-label">Initial Cost</span>
+                  <span className="product-card__stat-value">
+                    {item.initial_cost}$
+                  </span>
+                </div>
+                <div className="product-card__stat">
                   <span className="product-card__stat-label">Price</span>
                   <span className="product-card__stat-value">
                     {item.price}$

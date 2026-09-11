@@ -78,7 +78,10 @@ function CartForm({ item, onSubmit, onCancel }) {
           {data.map((product) => (
             <li className="cart-form-preview__item" key={product.id}>
               <span className="cart-form-preview__name">{product.name}</span>
-              <span className="cart-form-preview__price">{product.price}$</span>
+              <span className="cart-form-preview__prices">
+                <span>Cost: {product.initial_cost}$</span>
+                <span>Price: {product.price}$</span>
+              </span>
             </li>
           ))}
         </ul>

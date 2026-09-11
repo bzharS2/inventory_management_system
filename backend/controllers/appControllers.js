@@ -42,17 +42,25 @@ const createProductController = async (req, res) => {
     const name = parseText(req.body.name, MAX_NAME);
     const description = parseText(req.body.description, MAX_DESCRIPTION);
     const barcode = parseBarcode(req.body.barcode);
+    const initialCost = parsePrice(req.body.initial_cost);
     const price = parsePrice(req.body.price);
     const quantity = parsePositiveInt(req.body.quantity);
 
-    if (!name || !description || !barcode || price === null || quantity === null) {
+    if (
+        !name ||
+        !description ||
+        !barcode ||
+        initialCost === null ||
+        price === null ||
+        quantity === null
+    ) {
         return res.status(400).json({ error: `invalid values` });
     }
 
     try {
         const [result] = await db.query(
-            `INSERT INTO products (name,description,barcode,price,quantity) VALUES(?,?,?,?,?)`,
-            [name, description, barcode, price, quantity]
+            `INSERT INTO products (name,description,barcode,initial_cost,price,quantity) VALUES(?,?,?,?,?,?)`,
+            [name, description, barcode, initialCost, price, quantity]
         );
         if (result.affectedRows == 0) {
             return res.status(400).json({ error: `product didn't get created` });
@@ -71,17 +79,26 @@ const updateProductController = async (req, res) => {
     const name = parseText(req.body.name, MAX_NAME);
     const description = parseText(req.body.description, MAX_DESCRIPTION);
     const barcode = parseBarcode(req.body.barcode);
+    const initialCost = parsePrice(req.body.initial_cost);
     const price = parsePrice(req.body.price);
     const quantity = parsePositiveInt(req.body.quantity);
 
-    if (!id || !name || !description || !barcode || price === null || quantity === null) {
+    if (
+        !id ||
+        !name ||
+        !description ||
+        !barcode ||
+        initialCost === null ||
+        price === null ||
+        quantity === null
+    ) {
         return res.status(400).json({ error: `invalid values` });
     }
 
     try {
         const [result] = await db.query(
-            `UPDATE products SET name = ?, description = ?, barcode = ?, price = ?, quantity = ? WHERE id = ?;`,
-            [name, description, barcode, price, quantity, id]
+            `UPDATE products SET name = ?, description = ?, barcode = ?, initial_cost = ?, price = ?, quantity = ? WHERE id = ?;`,
+            [name, description, barcode, initialCost, price, quantity, id]
         );
         if (result.affectedRows == 0) {
             return res.status(400).json({ error: `product didn't get update` });
