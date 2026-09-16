@@ -14,6 +14,7 @@ import "./Products.css";
 import Form from "../components/form";
 import StockForm from "../components/StockForm";
 import ConfirmDialog from "../components/ConfirmDialog";
+import { useAuth } from "../context/AuthContext";
 
 function Products() {
   const [data, setData] = useState([]);
@@ -23,6 +24,8 @@ function Products() {
   const [itemToUpdate, setItemToUpdate] = useState(null);
   const [fromStock, setFromStock] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
 
   async function loadProducts() {
     const result = await getProducts();
@@ -118,12 +121,12 @@ function Products() {
           </div>
         </div>
 
-        <button
+        {isAdmin && <button
           className="products__btn products__btn--primary"
           onClick={() => setShowForm(true)}
         >
           Add Product
-        </button>
+        </button>}
       </div>
 
 
@@ -197,7 +200,7 @@ function Products() {
                   </span>
                 </div>
 
-                <div className="product-card__actions">
+                {isAdmin && <div className="product-card__actions">
                   <button
                     className="product-card__btn product-card__btn--update"
                     onClick={() => {
@@ -222,7 +225,7 @@ function Products() {
                   >
                     Add Stock
                   </button>
-                </div>
+                </div>}
               </div>
             </div>
           ))}

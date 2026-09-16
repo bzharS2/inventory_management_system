@@ -17,6 +17,7 @@ CREATE TABLE `activity_logs` (
   `action` varchar(100) NOT NULL,
   `entity_type` varchar(50) DEFAULT NULL,
   `entity_id` int DEFAULT NULL,
+  `details` varchar(1000) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `session_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),

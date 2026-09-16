@@ -1,5 +1,6 @@
 require("dotenv").config();
 const db = require("../db");
+const { logActivity } = require("../utils/activityLogger");
 const {
     MAX_NAME,
     MAX_DESCRIPTION,
@@ -65,6 +66,15 @@ const createProductController = async (req, res) => {
         if (result.affectedRows == 0) {
             return res.status(400).json({ error: `product didn't get created` });
         }
+
+        await logActivity({
+            userId: req.user.id,
+            action: 'CREATE_PRODUCT',
+            targetType: 'product',
+            targetId: result.insertId,
+            details: `Created product ${name}`,
+        });
+
         return res.status(200).json({ message: `product created successfully` });
     } catch (error) {
         if (isDuplicateKeyError(error)) {
@@ -103,6 +113,15 @@ const updateProductController = async (req, res) => {
         if (result.affectedRows == 0) {
             return res.status(400).json({ error: `product didn't get update` });
         }
+
+        await logActivity({
+            userId: req.user.id,
+            action: 'UPDATE_PRODUCT',
+            targetType: 'product',
+            targetId: id,
+            details: `Updated product ${name}`,
+        });
+
         return res.status(200).json({ message: `product updated successfully` });
     } catch (error) {
         if (isDuplicateKeyError(error)) {
@@ -122,6 +141,15 @@ const deleteProductController = async (req, res) => {
         if (result.affectedRows == 0) {
             return res.status(404).json({ error: `product not found` });
         }
+
+        await logActivity({
+            userId: req.user.id,
+            action: 'DELETE_PRODUCT',
+            targetType: 'product',
+            targetId: id,
+            details: 'Deleted product',
+        });
+
         return res.status(200).json({ message: `product deleted successfully` });
     } catch (error) {
         return res.status(500).json({ error: `internal server error` });
@@ -139,6 +167,15 @@ const addStockController = async (req, res) => {
         if (result.affectedRows == 0) {
             return res.status(400).json({ error: `stock didn't get added` });
         }
+
+        await logActivity({
+            userId: req.user.id,
+            action: 'ADD_STOCK',
+            targetType: 'product',
+            targetId: id,
+            details: `Added ${amount} units to stock`,
+        });
+
         return res.status(200).json({ message: `stock added successfully` });
     } catch (error) {
         return res.status(500).json({ error: `internal server error` });
@@ -201,9 +238,9 @@ const createSalesController = async (req, res) => {
 
             const [result] = await connection.query(
                 `INSERT INTO sales
-                (product_id, quantity, total_price)
-                VALUES (?, ?, ?)`,
-                [id, quantity, total]
+                (product_id, quantity, total_price, user_id)
+                VALUES (?, ?, ?, ?)`,
+                [id, quantity, total, req.user.id]
             );
 
             if (result.affectedRows === 0) {
@@ -229,6 +266,14 @@ const createSalesController = async (req, res) => {
         }
 
         await connection.commit();
+
+        await logActivity({
+            userId: req.user.id,
+            action: 'CREATE_SALE',
+            targetType: 'sale',
+            targetId: null,
+            details: `Created sale total $${Number(totalPrice).toFixed(2)}`,
+        });
 
         return res.status(200).json({
             message: `sales created successfully`,
@@ -362,6 +407,22 @@ const getSalesByRangeController = async (req, res) => {
     }
 };
 
+const getActivityLogsController = async (req, res) => {
+    try {
+        const [result] = await db.query(`
+            SELECT a.id, u.username, a.action, a.entity_type, a.entity_id, a.details, a.created_at
+            FROM activity_logs a
+            LEFT JOIN users u ON a.user_id = u.id
+            ORDER BY a.id DESC
+            LIMIT 100
+        `);
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error('Activity log fetch error:', error);
+        return res.status(500).json({ error: 'internal server error' });
+    }
+};
+
 module.exports = {
     getProductsController,
     getProductByBarcode,
@@ -376,5 +437,6 @@ module.exports = {
     getSortByPopularController,
     getSearchByNameController,
     getSalesByDateController,
-    getSalesByRangeController
+    getSalesByRangeController,
+    getActivityLogsController
 };

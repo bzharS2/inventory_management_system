@@ -1,38 +1,46 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const { getProductsController,
-    getProductByBarcode,
-    createProductController,
-    updateProductController,
-    deleteProductController,
-    addStockController,
-    createSalesController,
-    getSalesController,
-    getDashboardController,
-    getLowStockController,
-    getSortByPopularController,
-    getSearchByNameController,
-    getSalesByDateController,
-    getSalesByRangeController
+const csurf = require('csurf');
+const requireAuth = require('../middleware/requireAuth');
+const requireRole = require('../middleware/requireRole');
+const {
+  getProductsController,
+  getProductByBarcode,
+  createProductController,
+  updateProductController,
+  deleteProductController,
+  addStockController,
+  createSalesController,
+  getSalesController,
+  getDashboardController,
+  getLowStockController,
+  getSortByPopularController,
+  getSearchByNameController,
+  getSalesByDateController,
+  getSalesByRangeController,
+  getActivityLogsController,
 } = require('../controllers/appControllers');
 
+const csrfProtection = csurf({
+  cookie: false,
+});
 
-router.get('/products', getProductsController);// done
-router.get('/product/barcode/:barcode', getProductByBarcode);//done
-router.post('/products', createProductController);//done
-router.put('/product/:id', updateProductController);//done
-router.delete('/product/:id',deleteProductController);//done
-router.patch('/product/:id/stock',addStockController);//done
-router.get('/product/sort/lowStock',getLowStockController);//done
-router.get('/product/sort/popular',getSortByPopularController);//done
-router.post('/product/name',getSearchByNameController);// done
+router.get('/products', requireAuth, requireRole(['admin', 'staff']), getProductsController);
+router.get('/product/barcode/:barcode', requireAuth, requireRole(['admin', 'staff']), getProductByBarcode);
+router.post('/products', requireAuth, requireRole('admin'), csrfProtection, createProductController);
+router.put('/product/:id', requireAuth, requireRole('admin'), csrfProtection, updateProductController);
+router.delete('/product/:id', requireAuth, requireRole('admin'), csrfProtection, deleteProductController);
+router.patch('/product/:id/stock', requireAuth, requireRole('admin'), csrfProtection, addStockController);
+router.get('/product/sort/lowStock', requireAuth, requireRole(['admin', 'staff']), getLowStockController);
+router.get('/product/sort/popular', requireAuth, requireRole('admin'), getSortByPopularController);
+router.post('/product/name', requireAuth, requireRole(['admin', 'staff']), getSearchByNameController);
 
+router.post('/sales', requireAuth, requireRole(['admin', 'staff']), csrfProtection, createSalesController);
+router.get('/sales', requireAuth, requireRole('admin'), getSalesController);
+router.post('/sales/date', requireAuth, requireRole('admin'), getSalesByDateController);
+router.post('/sales/range', requireAuth, requireRole('admin'), getSalesByRangeController);
 
-router.post('/sales',createSalesController);
-router.get('/sales',getSalesController);// done
-router.post('/sales/date',getSalesByDateController);// done
-router.post('/sales/range',getSalesByRangeController);// done
-
-router.get('/dashboard',getDashboardController);// done 
+router.get('/dashboard', requireAuth, requireRole('admin'), getDashboardController);
+router.get('/activity-logs', requireAuth, requireRole('admin'), getActivityLogsController);
 
 module.exports = router;

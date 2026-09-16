@@ -19,7 +19,7 @@ function CartForm({ item, onSubmit, onCancel }) {
       setQuantity(item.quantity || "");
       setBarcode(item.barcode || "");
     } else {
-      setQuantity("");
+      setQuantity("1");
       setBarcode("");
     }
   }, [item]);
@@ -79,7 +79,6 @@ function CartForm({ item, onSubmit, onCancel }) {
             <li className="cart-form-preview__item" key={product.id}>
               <span className="cart-form-preview__name">{product.name}</span>
               <span className="cart-form-preview__prices">
-                <span>Cost: {product.initial_cost}$</span>
                 <span>Price: {product.price}$</span>
               </span>
             </li>
