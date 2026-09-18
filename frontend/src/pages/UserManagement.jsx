@@ -1,6 +1,8 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState } from 'react';
 import NavBar from '../components/NavBar';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { createUser as createUserRequest, getUsers, updateUserStatus } from '../services/api';
 
 function UserManagement() {
   const [users, setUsers] = useState([]);
@@ -12,9 +14,8 @@ function UserManagement() {
   const [pendingUser, setPendingUser] = useState(null);
 
   async function loadUsers() {
-    const response = await fetch('http://localhost:5000/users', { credentials: 'include' });
-    const data = await response.json();
-    if (response.ok) {
+    const data = await getUsers();
+    if (Array.isArray(data)) {
       setUsers(data);
     }
   }
@@ -31,20 +32,8 @@ function UserManagement() {
   async function confirmCreateUser() {
     const userToCreate = pendingUser;
     setPendingUser(null);
-    const csrfResponse = await fetch('http://localhost:5000/auth/csrf-token', { credentials: 'include' });
-    const csrfData = await csrfResponse.json().catch(() => ({}));
-    const response = await fetch('http://localhost:5000/users', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(csrfData.csrfToken ? { 'X-CSRF-Token': csrfData.csrfToken } : {}),
-      },
-      body: JSON.stringify(userToCreate),
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
+    const data = await createUserRequest(userToCreate);
+    if (data.error) {
       setMessage(data.error || 'Unable to create user');
       return;
     }
@@ -58,20 +47,8 @@ function UserManagement() {
   }
 
   async function toggleStatus(userId, isActive) {
-    const csrfResponse = await fetch('http://localhost:5000/auth/csrf-token', { credentials: 'include' });
-    const csrfData = await csrfResponse.json().catch(() => ({}));
-    const response = await fetch(`http://localhost:5000/users/${userId}/status`, {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(csrfData.csrfToken ? { 'X-CSRF-Token': csrfData.csrfToken } : {}),
-      },
-      body: JSON.stringify({ status: isActive ? 'inactive' : 'active' }),
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
+    const data = await updateUserStatus(userId, isActive ? 'inactive' : 'active');
+    if (data.error) {
       setMessage(data.error || 'Unable to update status');
       return;
     }

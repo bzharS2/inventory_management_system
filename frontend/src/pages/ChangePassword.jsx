@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import NavBar from '../components/NavBar';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { changePassword } from '../services/api';
 
 export default function ChangePassword() {
   const { user } = useAuth();
@@ -17,21 +18,9 @@ export default function ChangePassword() {
     setConfirmChange(false);
     setLoading(true);
     try {
-      const csrfResponse = await fetch('http://localhost:5000/auth/csrf-token', { credentials: 'include' });
-      const csrfData = await csrfResponse.json();
-      const response = await fetch('http://localhost:5000/auth/change-password', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfData.csrfToken,
-        },
-        body: JSON.stringify({ currentPassword, newPassword }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Password change failed');
+      const data = await changePassword(currentPassword, newPassword);
+      if (data.error) {
+        throw new Error(data.error);
       }
 
       setSuccess('Password changed successfully.');

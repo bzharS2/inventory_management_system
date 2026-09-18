@@ -112,6 +112,41 @@ async function createSales(items) {
   });
 }
 
+async function changePassword(currentPassword, newPassword) {
+  const csrfToken = await getCsrfToken();
+  return requestJson('http://localhost:5000/auth/change-password', {
+    method: 'POST',
+    headers: { 'X-CSRF-Token': csrfToken },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+}
+
+async function getActivityLogs() {
+  return requestJson('http://localhost:5000/activity-logs');
+}
+
+async function getUsers() {
+  return requestJson('http://localhost:5000/users');
+}
+
+async function createUser(userData) {
+  const csrfToken = await getCsrfToken();
+  return requestJson('http://localhost:5000/users', {
+    method: 'POST',
+    headers: { 'X-CSRF-Token': csrfToken },
+    body: JSON.stringify(userData),
+  });
+}
+
+async function updateUserStatus(userId, status) {
+  const csrfToken = await getCsrfToken();
+  return requestJson(`http://localhost:5000/users/${userId}/status`, {
+    method: 'PATCH',
+    headers: { 'X-CSRF-Token': csrfToken },
+    body: JSON.stringify({ status }),
+  });
+}
+
 export {
   getDashboard,
   getProducts,
@@ -127,4 +162,9 @@ export {
   getSalesDate,
   getSalesByRange,
   createSales,
+  changePassword,
+  getActivityLogs,
+  getUsers,
+  createUser,
+  updateUserStatus,
 };

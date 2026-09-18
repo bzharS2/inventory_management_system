@@ -1,16 +1,13 @@
 import { useEffect, useState } from 'react';
 import NavBar from '../components/NavBar';
+import { getActivityLogs } from '../services/api';
 
 function ActivityLogs() {
   const [logs, setLogs] = useState([]);
 
   async function loadLogs() {
-    const response = await fetch('http://localhost:5000/activity-logs', {
-      credentials: 'include',
-    });
-
-    const data = await response.json().catch(() => []);
-    if (response.ok) {
+    const data = await getActivityLogs();
+    if (Array.isArray(data)) {
       setLogs(data);
     }
   }
