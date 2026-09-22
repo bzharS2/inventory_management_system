@@ -4,7 +4,6 @@ import {
   getProducts,
   searchProducts,
   getProductsByBarcode,
-  deleteProduct,
   createProduct,
   updateProduct,
   addStock,
@@ -13,7 +12,6 @@ import NavBar from "../components/NavBar";
 import "./Products.css";
 import Form from "../components/form";
 import StockForm from "../components/StockForm";
-import ConfirmDialog from "../components/ConfirmDialog";
 import { useAuth } from "../context/AuthContext";
 
 function Products() {
@@ -23,7 +21,6 @@ function Products() {
   const [fromUpdate, setFromUpdate] = useState(false);
   const [itemToUpdate, setItemToUpdate] = useState(null);
   const [fromStock, setFromStock] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState(null);
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
 
@@ -44,14 +41,6 @@ function Products() {
     }
     const result = await getProductsByBarcode(value);
     setData(result);
-  }
-  async function handleDelete() {
-    const result = await deleteProduct(itemToDelete);
-    if (result.error) {
-      alert(result.error);
-    }
-    setItemToDelete(null);
-    loadProducts();
   }
   async function addProduct(productData) {
     const result = await createProduct(productData);
@@ -160,15 +149,6 @@ function Products() {
         </div>
       )}
 
-      <ConfirmDialog
-        open={itemToDelete !== null}
-        title="Delete product?"
-        message="Are you sure you want to delete this product? This action cannot be undone."
-        confirmLabel="Delete"
-        onConfirm={handleDelete}
-        onCancel={() => setItemToDelete(null)}
-      />
-
       <div className="products__list">
         {data &&
           data.length > 0 &&
@@ -209,12 +189,6 @@ function Products() {
                     }}
                   >
                     Update
-                  </button>
-                  <button
-                    className="product-card__btn product-card__btn--delete"
-                    onClick={() => setItemToDelete(item.id)}
-                  >
-                    Delete
                   </button>
                   <button
                     className="product-card__btn product-card__btn--stock"

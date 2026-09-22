@@ -46,14 +46,6 @@ async function getProductsByBarcode(barcode) {
   return requestJson(`http://localhost:5000/app/product/barcode/${barcode}`);
 }
 
-async function deleteProduct(id) {
-  const csrfToken = await getCsrfToken();
-  return requestJson(`http://localhost:5000/app/product/${id}`, {
-    method: 'DELETE',
-    headers: { 'X-CSRF-Token': csrfToken },
-  });
-}
-
 async function createProduct(productData) {
   const csrfToken = await getCsrfToken();
   return requestJson('http://localhost:5000/app/products', {
@@ -153,7 +145,6 @@ export {
   getSales,
   searchProducts,
   getProductsByBarcode,
-  deleteProduct,
   createProduct,
   updateProduct,
   addStock,

@@ -8,7 +8,6 @@ const {
   getProductByBarcode,
   createProductController,
   updateProductController,
-  deleteProductController,
   addStockController,
   createSalesController,
   getSalesController,
@@ -29,7 +28,6 @@ router.get('/products', requireAuth, requireRole(['admin', 'staff']), getProduct
 router.get('/product/barcode/:barcode', requireAuth, requireRole(['admin', 'staff']), getProductByBarcode);
 router.post('/products', requireAuth, requireRole('admin'), csrfProtection, createProductController);
 router.put('/product/:id', requireAuth, requireRole('admin'), csrfProtection, updateProductController);
-router.delete('/product/:id', requireAuth, requireRole('admin'), csrfProtection, deleteProductController);
 router.patch('/product/:id/stock', requireAuth, requireRole('admin'), csrfProtection, addStockController);
 router.get('/product/sort/lowStock', requireAuth, requireRole(['admin', 'staff']), getLowStockController);
 router.get('/product/sort/popular', requireAuth, requireRole('admin'), getSortByPopularController);

@@ -242,15 +242,6 @@
   background: #e0e7ff;
 }
 
-.product-card__btn--delete {
-  background: #fef2f2;
-  color: #dc2626;
-}
-
-.product-card__btn--delete:hover {
-  background: #fee2e2;
-}
-
 @media (max-width: 560px) {
   .products__header,
   .products__toolbar,
